@@ -4,7 +4,7 @@
 #include <Arduino.h>
 
 // Use pin 13 for onboard LED
-#define STATUS_LED 13
+#define STATUS_LED LED_BUILTIN
 
 // Call this once in setup()
 void initStatusLED();

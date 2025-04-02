@@ -1,19 +1,19 @@
 #include "connection.h"
 
 void connectToWiFi() {
-  Serial.print("Connecting to Wi-Fi...");
+  Serial.print("Connecting to the WiFi network...");
   while (WiFi.begin(wifiNetwork, wifiPassword) != WL_CONNECTED) {
     Serial.print(".");
-    blinkStatusLED(500); // Slow blink while trying Wi-Fi
+    blinkStatusLED(100); // Slow blink while trying Wi-Fi
   }
   Serial.println(" connected.");
 }
 
 void connectToMQTT() {
-  Serial.print("Connecting to Adafruit IO...");
+  Serial.println("Connecting to Adafruit IO MQTT...");
   mqttClient.setUsernamePassword(mqttUser, mqttPassword);
   while (!mqttClient.connect(mqttServer, mqttPort)) {
-    Serial.print(" failed. Error code: ");
+    Serial.print("Connection to Adafruit IO MQTT failed. Error code: ");
     Serial.println(mqttClient.connectError());
     Serial.println("Retrying in 5 seconds...");
 

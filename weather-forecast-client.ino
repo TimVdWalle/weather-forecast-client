@@ -4,7 +4,8 @@
 *
 *****************************************************************/
 #include <ArduinoMqttClient.h>
-#include <WiFiNINA.h>
+#include <WiFiNINA.h>     // For Arduino Uno Wifi rev2
+//#include <WiFiS3.h>     // For Arduino Uno Wifi rev4
 
 #include "arduino_secrets.h"
 #include "connection.h"
@@ -53,6 +54,7 @@ void setup() {
   Serial.begin(9600);
   while (!Serial);
 
+  Serial.println("Starting up...");
   initStatusLED();
 
   connectToWiFi();

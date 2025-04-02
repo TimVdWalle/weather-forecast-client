@@ -2,7 +2,8 @@
 #define CONNECTION_H
 
 #include <ArduinoMqttClient.h>
-#include <WiFiNINA.h>
+#include <WiFiNINA.h>     // For Arduino Uno Wifi rev2
+//#include <WiFiS3.h>     // For Arduino Uno Wifi rev4
 #include "led_status.h"
 
 // Extern declarations (defined in .ino)

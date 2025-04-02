@@ -5,7 +5,7 @@ bool ledState = LOW;
 
 void initStatusLED() {
   pinMode(STATUS_LED, OUTPUT);
-  digitalWrite(STATUS_LED, HIGH);
+  digitalWrite(STATUS_LED, LOW);
 }
 
 void blinkStatusLED(unsigned long interval) {
