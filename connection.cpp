@@ -10,7 +10,7 @@ void connectToWiFi() {
 }
 
 void connectToMQTT() {
-  Serial.println("Connecting to Adafruit IO MQTT...");
+  Serial.print("Connecting to Adafruit IO MQTT...");
   mqttClient.setUsernamePassword(mqttUser, mqttPassword);
   while (!mqttClient.connect(mqttServer, mqttPort)) {
     Serial.print("Connection to Adafruit IO MQTT failed. Error code: ");
