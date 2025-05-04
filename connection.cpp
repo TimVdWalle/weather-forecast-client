@@ -36,6 +36,7 @@ void ensureMQTTConnected() {
   if (!mqttClient.connected()) {
     Serial.println("MQTT disconnected! Reconnecting...");
     connectToMQTT();
+    //mqttClient.subscribe(MQTT_TOPIC_RECEIVING);
   }
 }
 

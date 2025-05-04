@@ -1,10 +1,11 @@
-#define WIFI_SSID         "wifi_network_name"
-#define WIFI_PASSWORD     "password"
+#define WIFI_SSID               "dummy"
+#define WIFI_PASSWORD           "dummy"
 
-#define MQTT_USER         "mqtt_user"
-#define MQTT_AIO_KEY      "mqtt_aio_key"
+#define MQTT_USER               "dummy"
+#define MQTT_AIO_KEY            "aio_dummy"
 
-#define MQTT_SERVER       "io.adafruit.com"
-#define MQTT_PORT         1883
+#define MQTT_SERVER             "broker.hivemq.com"
+#define MQTT_PORT               1883
 
-
+#define MQTT_TOPIC_RECEIVING    "forecast"
+#define MQTT_TOPIC_RECEIVING    "temperatures"

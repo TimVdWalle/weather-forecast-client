@@ -27,8 +27,8 @@ const int mqttPort = MQTT_PORT;
 const char mqttUser[] = MQTT_USER;
 const char mqttPassword[] = MQTT_AIO_KEY;
 
-const char topicSending[]  = "TimVdWalle/feeds/weather-forecast.temperatures";
-const char topicReceiving[]  = "TimVdWalle/feeds/weather-forecast.forecast";
+const char topicSending[]  = MQTT_TOPIC_SENDING_ADAFRUIT;
+const char topicReceiving[]  = MQTT_TOPIC_RECEIVING_ADAFRUIT;
 
 // Loop helper vars
 const long interval = 8000;
@@ -50,7 +50,7 @@ MqttClient mqttClient(wifiClient);
 *
 *****************************************************************/
 void setup() {
-  Serial.begin(31250);
+  Serial.begin(9600);
   while (!Serial);
 
   Serial.println("Starting up...");
@@ -58,6 +58,7 @@ void setup() {
   connectToWiFi();
   connectToMQTT();
   mqttClient.subscribe(topicReceiving);
+  mqttClient.onMessage(onMqttMessage);
 }
 
 // Loop
@@ -68,14 +69,12 @@ void loop() {
   // maintain MQTT connection
   mqttClient.poll();  
 
-  
-  handleReceiving();      // handle incoming mqtt data
-
-  //unsigned long currentMillis = millis();
-  //if (currentMillis - previousMillis >= interval) {
-  //  previousMillis = currentMillis;
-  //  handleSending();
-  //}
+  // handle sending mqtt data
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    handleSending();
+  }
 
   // Update LED to reflect current connection state
   updateStatusLED();
@@ -96,48 +95,22 @@ void handleSending(){
   mqttClient.print(Rvalue);
   mqttClient.endMessage();
 
-  Serial.println("Messages sent.\n");
+  Serial.println("Message(s) sent.\n");
   setStatusLED(true);  
 }
 
+void onMqttMessage(int messageSize) {
+  // we received a message, print out the topic and contents
+  Serial.println("Received a message with topic '");
+  Serial.print(mqttClient.messageTopic());
+  Serial.print("', length ");
+  Serial.print(messageSize);
+  Serial.println(" bytes:");
 
-// check this https://docs.arduino.cc/tutorials/uno-wifi-rev2/uno-wifi-r2-mqtt-device-to-device/
-void handleReceiving(){
-  int messageSize = mqttClient.parseMessage();
-
-  if (messageSize) {
-    // we received a message, print out the topic and contents
-    Serial.print("Received a message with topic '");
-    Serial.print(mqttClient.messageTopic());
-    Serial.print("', length ");
-    Serial.print(messageSize);
-    Serial.println(" bytes:");
-
-    // use the Stream interface to print the contents
-    while (mqttClient.available()) {
-      Serial.print((char)mqttClient.read());
-    }
-    Serial.println();
-
-    Serial.println();
+  // use the Stream interface to print the contents
+  while (mqttClient.available()) {
+    Serial.print((char)mqttClient.read());
   }
+  Serial.println();
+  Serial.println();
 }
-
-// void handleReceiving(){
-//   while (mqttClient.parseMessage()) {
-
-//     int messageSize = mqttClient.parseMessage();
-//     Serial.print("Received a message with topic '");
-//     Serial.print(mqttClient.messageTopic());
-//     Serial.print("', length ");
-//     Serial.print(messageSize);
-//     Serial.println(" bytes:");
-
-//     // use the Stream interface to print the contents
-//     while (mqttClient.available()) {
-//       Serial.print((char)mqttClient.read());
-//     }
-//     Serial.println();
-//     Serial.println();
-//   }
-// }
