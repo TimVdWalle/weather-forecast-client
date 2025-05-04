@@ -27,12 +27,12 @@ const int mqttPort = MQTT_PORT;
 const char mqttUser[] = MQTT_USER;
 const char mqttPassword[] = MQTT_AIO_KEY;
 
-const char topicSending[]  = MQTT_TOPIC_SENDING_ADAFRUIT;
+//const char topicSending[]  = MQTT_TOPIC_SENDING_ADAFRUIT;
 const char topicReceiving[]  = MQTT_TOPIC_RECEIVING_ADAFRUIT;
 
 // Loop helper vars
-const long interval = 8000;
-unsigned long previousMillis = 0;
+const long interval = 650;
+int statusMessageLineStars = 100;
 
 
 /****************************************************************
@@ -53,7 +53,10 @@ void setup() {
   Serial.begin(9600);
   while (!Serial);
 
+  Serial.println("WEATHER FORECAST CLIENT V0.2");
+  Serial.println("****************************");
   Serial.println("Starting up...");
+
   initStatusLED();
   connectToWiFi();
   connectToMQTT();
@@ -67,19 +70,57 @@ void loop() {
   ensureMQTTConnected();
 
   // maintain MQTT connection
+  // handling of incoming data is done in onMqttMessage
+  // mqttClient.poll keeps connection alive and listens for incoming data on the channel
   mqttClient.poll();  
 
-  // handle sending mqtt data
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;
-    handleSending();
-  }
+  // send regular status messages to serial monitor output
+  handleStatusMessage();
 
   // Update LED to reflect current connection state
   updateStatusLED();
 }
 
+// handle sending mqtt data
+unsigned long previousMillis = 0;
+int charCount = 0;
+void handleStatusMessage() {
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    if(charCount > statusMessageLineStars) {
+      Serial.println();
+      resetCharCount();
+      }
+
+      Serial.print("*");
+      charCount++;
+  }
+}
+
+void resetCharCount() {
+  charCount = 0;
+}
+
+void onMqttMessage(int messageSize) {
+  // we received a message, print out the topic and contents
+  resetCharCount();
+  Serial.println();
+  Serial.print("Received a message with topic '");
+  Serial.print(mqttClient.messageTopic());
+  Serial.print("', length ");
+  Serial.print(messageSize);
+  Serial.println(" bytes:");
+
+  // use the Stream interface to print the contents
+  while (mqttClient.available()) {
+    Serial.print((char)mqttClient.read());
+  }
+  Serial.println();
+  Serial.println();
+}
+
+/*
 void handleSending(){
   setStatusLED(false);
 
@@ -98,19 +139,4 @@ void handleSending(){
   Serial.println("Message(s) sent.\n");
   setStatusLED(true);  
 }
-
-void onMqttMessage(int messageSize) {
-  // we received a message, print out the topic and contents
-  Serial.println("Received a message with topic '");
-  Serial.print(mqttClient.messageTopic());
-  Serial.print("', length ");
-  Serial.print(messageSize);
-  Serial.println(" bytes:");
-
-  // use the Stream interface to print the contents
-  while (mqttClient.available()) {
-    Serial.print((char)mqttClient.read());
-  }
-  Serial.println();
-  Serial.println();
-}
+*/
