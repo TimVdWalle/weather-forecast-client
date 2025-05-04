@@ -113,11 +113,26 @@ void onMqttMessage(int messageSize) {
   Serial.println(" bytes:");
 
   // use the Stream interface to print the contents
+  String data = "";
   while (mqttClient.available()) {
-    Serial.print((char)mqttClient.read());
+    char c = (char)mqttClient.read();
+    data += c;
   }
+
   Serial.println();
   Serial.println();
+
+    // Only handle if it's a complete, non-empty message
+  if (data.length() > 0) {
+    handleIncomingData(data);
+  } else {
+    Serial.println("Warning: Received empty or invalid MQTT message.");
+  }
+}
+
+void handleIncomingData(String data) {
+  Serial.println("Parsing incoming data:");
+  Serial.println(data);
 }
 
 /*
