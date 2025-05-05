@@ -4,6 +4,7 @@
 *
 *****************************************************************/
 #include <ArduinoMqttClient.h>
+#include <ArduinoJson.h> 
 #include <WiFiNINA.h>     // For Arduino Uno Wifi rev2
 //#include <WiFiS3.h>     // For Arduino Uno Wifi rev4
 
@@ -130,11 +131,60 @@ void onMqttMessage(int messageSize) {
   }
 }
 
+// Dummy display function
+void displayForecast(JsonObject& now, JsonObject& shortTerm, JsonObject& midTerm, JsonObject& longTerm, JsonObject& xlongTerm) {
+  Serial.println("=== WEATHER FORECAST ===");
+
+  auto printEntry = [](const char* label, JsonObject& entry) {
+    Serial.print(label);
+    Serial.print(": ");
+    Serial.print(entry["temp"].as<float>());
+    Serial.print("°C, ");
+    Serial.print(entry["sky"].as<const char*>());
+    Serial.print(", Wind ");
+    Serial.print(entry["wind"]["speed"].as<float>());
+    Serial.print(" km/h ");
+    Serial.println(entry["wind"]["dir"].as<const char*>());
+  };
+
+  printEntry("Now", now);
+  printEntry("0–3h", shortTerm);
+  printEntry("3–6h", midTerm);
+  printEntry("6–12h", longTerm);
+  printEntry("12–24h", xlongTerm);
+}
+
+// lets start by sending the data in json
+// if that turns out to be asking too much resources to parse (RAM and/or CPU), then switch to something like "23.5,65,1012" or "T=23.5;H=65", 
+// which can be parsed with sscanf() or strtok(); those methods are more resource-friendly, but the data format becomes less human-readable and less flexible
 void handleIncomingData(String data) {
   Serial.println("Parsing incoming data:");
   Serial.println(data);
-}
 
+  StaticJsonDocument<512> doc;  // Adjust size as needed
+
+  DeserializationError error = deserializeJson(doc, data);
+  if (error) {
+    Serial.print("JSON parsing failed: ");
+    Serial.println(error.f_str());
+    return;
+  }
+
+  // Extract forecast objects
+  JsonObject now       = doc["now_0h"];
+  JsonObject shortTerm = doc["short_0-3h"];
+  JsonObject midTerm   = doc["mid_3-6h"];
+  JsonObject longTerm  = doc["long_6-12h"];
+  JsonObject xlongTerm = doc["xlong_12-24h"];
+
+  if (now.isNull() || shortTerm.isNull() || midTerm.isNull() || longTerm.isNull() || xlongTerm.isNull()) {
+    Serial.println("One or more forecast sections are missing.");
+    return;
+  }
+
+  // Call dummy display function
+  displayForecast(now, shortTerm, midTerm, longTerm, xlongTerm);
+}
 /*
 void handleSending(){
   setStatusLED(false);
@@ -154,4 +204,53 @@ void handleSending(){
   Serial.println("Message(s) sent.\n");
   setStatusLED(true);  
 }
+*/
+
+
+/*
+example json expected format : 
+
+{
+  "now_0h": {
+    "temp": 21.8,
+    "sky": "partly cloudy",
+    "wind": {
+      "speed": 4.5,
+      "dir": "NE"
+    }
+  },
+  "short_0-3h": {
+    "temp": 22.4,
+    "sky": "sunny",
+    "wind": {
+      "speed": 5.1,
+      "dir": "E"
+    }
+  },
+  "mid_3-6h": {
+    "temp": 23.0,
+    "sky": "mostly sunny",
+    "wind": {
+      "speed": 6.3,
+      "dir": "SE"
+    }
+  },
+  "long_6-12h": {
+    "temp": 19.6,
+    "sky": "cloudy",
+    "wind": {
+      "speed": 7.8,
+      "dir": "S"
+    }
+  },
+  "xlong_12-24h": {
+    "temp": 17.2,
+    "sky": "rainy",
+    "wind": {
+      "speed": 9.0,
+      "dir": "SW"
+    }
+  }
+}
+
 */
